@@ -390,6 +390,11 @@ static lua_State * luasandbox_newstate(php_luasandbox_obj * intern)
 			"Attempt to allocate a new Lua state failed");
 	}
 
+	// Disable JIT when using LuaJIT.
+	#ifdef LUA_JITLIBNAME
+		luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_OFF);
+	#endif
+
 	lua_atpanic(L, luasandbox_panic);
 
 	// Register the standard library

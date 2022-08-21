@@ -600,8 +600,13 @@ static void luasandbox_load_helper(int binary, INTERNAL_FUNCTION_PARAMETERS)
 	// Check to see if the code is binary (with precompiled data mark) if this
 	// was called as loadBinary(), and plain code (without mark) if this was
 	// called as loadString()
-	have_mark = (php_memnstr(p.code, LUA_SIGNATURE,
-		sizeof(LUA_SIGNATURE) - 1, p.code + p.codeLength) != NULL);
+	#ifdef LUA_JITLIBNAME
+		have_mark = (php_memnstr(p.code, "\033LJ",
+			sizeof("\033LJ") - 1, p.code + p.codeLength) != NULL);
+	#else
+		have_mark = (php_memnstr(p.code, LUA_SIGNATURE,
+			sizeof(LUA_SIGNATURE) - 1, p.code + p.codeLength) != NULL);
+	#endif
 	if (binary && !have_mark) {
 		php_error_docref(NULL, E_WARNING,
 			"the string does not appear to be a valid binary chunk");

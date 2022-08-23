@@ -115,8 +115,13 @@ void luasandbox_lib_register(lua_State * L)
 	lua_pushcfunction(L, luaopen_os);
 	lua_call(L, 0, 0);
 
-	// Install our own string library
-	lua_pushcfunction(L, luasandbox_open_string);
+	// WGL - Applied luasandbox's patch to luajit's copy of the string library for best compatibility.
+	#ifdef WGL_LUAJIT
+		lua_pushcfunction(L, luaopen_string);
+	#else
+		// Install our own string library
+		lua_pushcfunction(L, luasandbox_open_string);
+	#endif
 	lua_call(L, 0, 0);
 
 	// Filter the os library

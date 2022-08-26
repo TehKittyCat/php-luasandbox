@@ -68,6 +68,7 @@ typedef struct {
 ZEND_BEGIN_MODULE_GLOBALS(luasandbox)
 	HashTable * allowed_globals;
 	long active_count;
+	zend_bool jit_enabled;
 ZEND_END_MODULE_GLOBALS(luasandbox)
 
 typedef struct {

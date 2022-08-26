@@ -223,6 +223,12 @@ zend_module_entry luasandbox_module_entry = {
 };
 /* }}} */
 
+/* {{{ INI Settings */
+PHP_INI_BEGIN()
+	STD_PHP_INI_BOOLEAN("luasandbox.jit_enabled", "0", PHP_INI_ALL, OnUpdateBool, jit_enabled, zend_luasandbox_globals, luasandbox_globals)
+PHP_INI_END()
+/* }}} */
+
 #ifdef COMPILE_DL_LUASANDBOX
 ZEND_GET_MODULE(luasandbox)
 #endif
@@ -231,9 +237,7 @@ ZEND_GET_MODULE(luasandbox)
  */
 PHP_MINIT_FUNCTION(luasandbox)
 {
-	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
-	*/
 
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "LuaSandbox", luasandbox_methods);
@@ -316,6 +320,7 @@ static PHP_GSHUTDOWN_FUNCTION(luasandbox)
 PHP_MSHUTDOWN_FUNCTION(luasandbox)
 {
 	luasandbox_timer_mshutdown();
+	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
 }
 /* }}} */
@@ -341,6 +346,7 @@ PHP_MINFO_FUNCTION(luasandbox)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "luasandbox support", "enabled");
 	php_info_print_table_end();
+	DISPLAY_INI_ENTRIES();
 }
 /* }}} */
 
@@ -392,7 +398,11 @@ static lua_State * luasandbox_newstate(php_luasandbox_obj * intern)
 
 	// Disable JIT when using LuaJIT.
 	#ifdef LUA_JITLIBNAME
-		luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_OFF);
+		if ( LUASANDBOX_G(jit_enabled) ) {
+			luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_ON);
+		} else {
+			luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_OFF);
+		}
 	#endif
 
 	lua_atpanic(L, luasandbox_panic);
